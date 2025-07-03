@@ -23,16 +23,38 @@ const pool = new Pool({
 });
 
 // ✅ CORS configuration
-const allowedOrigin = 'http://43.204.100.237:8033';
+const allowedOrigins = [
+  'http://43.204.100.237:8031',
+  'http://43.204.100.237:8032',
+  'http://43.204.100.237:8033',
+];
 
 app.use(cors({
-  origin: allowedOrigin,
+  origin: (origin, callback) => {
+    console.log(`🔍 Request origin: ${origin}`);
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['set-cookie']
 }));
 
+app.options('*', cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+  
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
