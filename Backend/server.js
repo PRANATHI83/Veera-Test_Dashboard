@@ -24,23 +24,13 @@ const pool = new Pool({
 
 // ✅ CORS configuration
 const allowedOrigin = 'http://43.204.100.237:8033';
+
 app.use(cors({
-  origin: (origin, callback) => {
-    console.log(`🔍 Request origin: ${origin}`);
-    if (!origin || origin === allowedOrigin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: allowedOrigin,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['set-cookie']
-}));
-app.options('*', cors({
-  origin: allowedOrigin,
-  credentials: true
 }));
 
 // Middleware
