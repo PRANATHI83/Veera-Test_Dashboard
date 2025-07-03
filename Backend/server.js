@@ -23,17 +23,24 @@ const pool = new Pool({
 });
 
 const allowedOrigins = [
-  'http://127.0.0.1:5500',
-  'http://43.204.100.237:3033'
+  'http://43.204.100.237:8033',
+  'http://43.204.100.237:8031',
+  'http://43.204.100.237:8032',
+  'http://43.204.100.237:8030',
 ];
 
 app.use(cors({
-  origin: 'http://127.0.0.1:5500', // or your exact frontend origin
+  origin: function (origin, callback) {
+    console.log(`🔍 Request origin: ${origin}`);
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  exposedHeaders: ['set-cookie']
-}));
+}))
+
 app.use((req, res, next) => {
   console.log('Incoming request:', req.method, req.url);
   console.log('Headers:', req.headers);
