@@ -7,11 +7,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* Login Page Styles */
-        body { /* Moved margin and font-family from .login-container */
+        body { /* Added body selector for margin/font-family */
             margin: 0;
             font-family: Arial, sans-serif;
         }
         .login-container {
+            /* margin: 0; -- Moved to body */
+            /* font-family: Arial, sans-serif; -- Moved to body */
             display: flex;
             height: 100vh;
             padding-top: 70px;
@@ -298,8 +300,7 @@
                     console.log('Login successful, redirecting to dashboard');
                     // Give user a moment to see success message before redirecting
                     setTimeout(() => {
-                        // Changed redirect URL to the dashboard frontend server (port 8030)
-                        window.location.href = 'http://13.201.102.9:8030/dashboard'; 
+                        window.location.href = 'http://13.201.102.9:3016/dashboard'; 
                     }, 1500); // Redirect after 1.5 seconds
                 } catch (error) {
                     console.error('Login error:', error);
