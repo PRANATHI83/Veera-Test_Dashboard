@@ -168,7 +168,7 @@ app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
     });
   } catch (err) {
     console.error('Signup error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+     res.status(500).json({ error: err.message || 'Internal server error' });
   }
 });
 
