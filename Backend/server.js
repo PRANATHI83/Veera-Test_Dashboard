@@ -21,10 +21,10 @@ const pool = new Pool({
   port: parseInt(process.env.DB_PORT) || 5432,
 });
 
+// Allow both local and deployed frontend origins
 const allowedOrigins = [
   'http://127.0.0.1:5500',
   'http://43.204.100.237:8033',
-  'http://43.204.100.237:3016'
 ];
 
 app.use(cors({
@@ -32,20 +32,14 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn('Blocked CORS origin:', origin);
-      callback(new Error('CORS not allowed from origin: ' + origin));
+      callback(new Error('CORS not allowed for origin: ' + origin));
     }
   },
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['set-cookie']
 }));
-
-app.use((req, res, next) => {
-  console.log('Incoming:', req.method, req.url);
-  next();
-});
 
 app.use(express.json());
 app.use(cookieParser());
@@ -65,23 +59,21 @@ const initDatabase = async () => {
         profile_picture TEXT
       )
     `);
-    console.log('✅ Database initialized');
+    console.log('Database initialized');
   } catch (error) {
-    console.error('❌ DB init failed:', error);
+    console.error('Database initialization failed:', error);
     process.exit(1);
   }
 };
 
 const authenticateToken = (req, res, next) => {
-  const token = req.cookies.token || 
-                req.headers['authorization']?.split(' ')[1] || 
-                req.query.token;
-
-  if (!token) return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  const token = req.cookies.token || req.headers['authorization']?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized - No token' });
+  }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
-      res.clearCookie('token');
       return res.status(403).json({ error: 'Forbidden - Invalid token' });
     }
     req.user = user;
@@ -89,41 +81,41 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-const validateEmail = (email) => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+const validateEmail = (email) => {
+  const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return re.test(email);
+};
 
+// Serve pages
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../Login/index.html'));
 });
-
 app.get('/signup', (req, res) => {
   res.sendFile(path.join(__dirname, '../Sign_up/index.html'));
 });
-
 app.get('/forgot-password', (req, res) => {
   res.sendFile(path.join(__dirname, '../Forgot/index.html'));
 });
-
 app.get('/dashboard', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, '../Dashboard/dashboard.html'));
 });
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', time: new Date() });
-});
-
+// Signup API
 app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
-    if (!name || !email || !password)
+    if (!name || !email || !password) {
       return res.status(400).json({ error: 'All fields are required' });
+    }
 
-    if (!validateEmail(email))
+    if (!validateEmail(email)) {
       return res.status(400).json({ error: 'Invalid email format' });
+    }
 
     const existing = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (existing.rows.length > 0)
+    if (existing.rows.length > 0) {
       return res.status(400).json({ error: 'Email already registered' });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const profilePicture = req.file ? req.file.buffer.toString('base64') : null;
@@ -133,8 +125,8 @@ app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
       [name, email, hashedPassword, profilePicture]
     );
 
-    const newUser = result.rows[0];
-    const token = jwt.sign({ userId: newUser.id, email: newUser.email }, JWT_SECRET, { expiresIn: '1h' });
+    const user = result.rows[0];
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
 
     res.cookie('token', token, {
       httpOnly: true,
@@ -143,13 +135,13 @@ app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
       maxAge: 60 * 60 * 1000
     });
 
-    res.status(201).json({ 
+    res.status(201).json({
       message: 'Signup successful',
       user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        profilePicture: newUser.profile_picture ? `data:image/jpeg;base64,${newUser.profile_picture}` : null
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        profilePicture: user.profile_picture ? `data:image/jpeg;base64,${user.profile_picture}` : null
       }
     });
   } catch (error) {
@@ -158,20 +150,20 @@ app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
   }
 });
 
+// Login API
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password, rememberMe } = req.body;
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
-
-    if (!user)
-      return res.status(400).json({ error: 'Email not found' });
+    if (!user) return res.status(400).json({ error: 'Email not found' });
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match)
-      return res.status(400).json({ error: 'Incorrect password' });
+    if (!match) return res.status(400).json({ error: 'Incorrect password' });
 
-    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: rememberMe ? '7d' : '1h' });
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: rememberMe ? '7d' : '1h'
+    });
 
     res.cookie('token', token, {
       httpOnly: true,
@@ -195,64 +187,54 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// Forgot Password
 app.post('/api/forgot-password', async (req, res) => {
-  try {
-    const { email, newPassword, confirmPassword } = req.body;
-
-    if (!email || !newPassword || !confirmPassword)
-      return res.status(400).json({ error: 'All fields are required' });
-
-    if (newPassword !== confirmPassword)
-      return res.status(400).json({ error: 'Passwords do not match' });
-
-    if (newPassword.length < 8)
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
-
-    const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (userCheck.rows.length === 0)
-      return res.status(400).json({ error: 'Email not registered' });
-
-    const hashed = await bcrypt.hash(newPassword, 10);
-    await pool.query('UPDATE users SET password = $1 WHERE email = $2', [hashed, email]);
-
-    res.json({ message: 'Password reset successful' });
-  } catch (error) {
-    console.error('Reset error:', error);
-    res.status(500).json({ error: 'Error resetting password' });
+  const { email, newPassword, confirmPassword } = req.body;
+  if (!email || !newPassword || !confirmPassword) {
+    return res.status(400).json({ error: 'All fields are required' });
   }
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ error: 'Passwords do not match' });
+  }
+
+  const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+  if (result.rows.length === 0) {
+    return res.status(400).json({ error: 'Email not registered' });
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  await pool.query('UPDATE users SET password = $1 WHERE email = $2', [hashedPassword, email]);
+  res.json({ message: 'Password reset successful' });
 });
 
+// Get user info
 app.get('/api/user', authenticateToken, async (req, res) => {
-  try {
-    const result = await pool.query('SELECT id, name, email, profile_picture FROM users WHERE email = $1', [req.user.email]);
-    const user = result.rows[0];
+  const result = await pool.query('SELECT id, name, email, profile_picture FROM users WHERE email = $1', [req.user.email]);
+  const user = result.rows[0];
+  if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (!user)
-      return res.status(404).json({ error: 'User not found' });
-
-    res.json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      profilePicture: user.profile_picture ? `data:image/jpeg;base64,${user.profile_picture}` : null
-    });
-  } catch (error) {
-    console.error('User fetch error:', error);
-    res.status(500).json({ error: 'Error fetching user' });
-  }
+  res.json({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    profilePicture: user.profile_picture ? `data:image/jpeg;base64,${user.profile_picture}` : null
+  });
 });
 
+// Logout
 app.post('/api/logout', (req, res) => {
   res.clearCookie('token');
   res.json({ message: 'Logout successful' });
 });
 
+// Protected route test
 app.get('/api/protected', authenticateToken, (req, res) => {
-  res.json({ message: 'Protected content', user: req.user });
+  res.json({ message: 'Access granted to protected route', user: req.user });
 });
 
+// Start server
 initDatabase().then(() => {
   app.listen(port, () => {
-    console.log(`🚀 Server running at http://43.204.100.237:${port}`);
+    console.log(`Server running on http://43.204.100.237:${port}`);
   });
 });
