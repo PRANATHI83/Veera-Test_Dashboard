@@ -769,7 +769,7 @@
           // Fetch user data from server
           async function fetchUserData() {
               try {
-                  const response = await fetch('http://43.204.100.237:3016/api/user', {
+                  const response = await fetch('http://13.201.102.9:3016/api/user', {
                       method: 'GET',
                       credentials: 'include'
                   });
@@ -926,7 +926,7 @@
           // Logout handling
           async function logout() {
               try {
-                  await fetch('http://43.204.100.237:3016/api/logout', {
+                  await fetch('http://13.201.102.9:3016/api/logout', {
                       method: 'POST',
                       credentials: 'include'
                   });

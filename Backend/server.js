@@ -24,10 +24,10 @@ const pool = new Pool({
 
 // ✅ CORS configuration
 const allowedOrigins = [
-  'http://43.204.100.237:8031',
-  'http://43.204.100.237:8032',
-  'http://43.204.100.237:8033',
-  'http://43.204.100.237:8030',
+  'http://13.201.102.9:8031',
+  'http://13.201.102.9:8032',
+  'http://13.201.102.9:8033',
+  'http://13.201.102.9:8030',
   
 ];
 
@@ -290,6 +290,6 @@ app.get('/api/protected', authenticateToken, (req, res) => {
 // Start server
 initDatabase().then(() => {
   app.listen(port, () => {
-    console.log(`🚀 Server running at http://43.204.100.237:${port}`);
+    console.log(`🚀 Server running at http://13.201.102.9:${port}`);
   });
 });
