@@ -36,12 +36,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Serve static frontend folders
-app.use('/Login', express.static(path.join(__dirname, '../Login')));
-app.use('/Sign', express.static(path.join(__dirname, '../Sign')));
-app.use('/Forgot_password', express.static(path.join(__dirname, '../Forgot_password')));
-app.use('/Dashboard', express.static(path.join(__dirname, '../Dashboard')));
-app.use('/uploads', express.static(uploadDir)); // Serve uploaded images
-
+app.use('/Login', express.static(path.join(__dirname, 'Login')));
+app.use('/Sign', express.static(path.join(__dirname, 'Sign')));
+app.use('/Forgot_password', express.static(path.join(__dirname, 'Forgot_password')));
+app.use('/Dashboard', express.static(path.join(__dirname, 'Dashboard')));
 // GET user (example)
 app.get('/api/user', (req, res) => {
   const user = {
