@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: veera_postgres_test
+    restart: always
+    ports:
+      - "5440:5432"
+    environment:
+      POSTGRES_DB: login
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin234
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+    build: ./Backend
+    container_name: veera_backend
+    restart: always
+    ports:
+      - "3016:3016"
+    environment:
+      DB_USER: postgres
+      DB_HOST: postgres
+      DB_DATABASE: login
+      DB_PASSWORD: admin234
+      DB_PORT: 5432
+      JWT_SECRET: your_jwt_secret_key
+    depends_on:
+      - postgres
+
+  dashboard:
+    build: ./Dashboard
+    container_name: veera_dashboard
+    restart: always
+    ports:
+      - "8030:80"
+
+  forgot_password:
+    build: ./Forgot_password
+    container_name: veera_forgot_password
+    restart: always
+    ports:
+      - "8031:80"
+
+  login:
+    build: ./Login
+    container_name: veera_login
+    restart: always
+    ports:
+      - "8032:80"
+
+  sign:
+    build: ./Sign
+    container_name: veera_sign
+    restart: always
+    ports:
+      - "8033:80"
+
+volumes:
+  pgdata:
+

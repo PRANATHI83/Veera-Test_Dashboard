@@ -24,15 +24,15 @@ const pool = new Pool({
 
 // ✅ CORS configuration
 const allowedOrigins = [
-  'http://13.201.102.9:8031',
-  'http://13.201.102.9:8032',
-  'http://13.201.102.9:8033',
-  'http://13.201.102.9:8030',
+  'http://43.204.100.237:8031',
+  'http://43.204.100.237:8032',
+  'http://43.204.100.237:8033',
+  'http://43.204.100.237:8030',
   
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
+  origin: (origin, callback) => {
     console.log(`🔍 Request origin: ${origin}`);
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -45,6 +45,18 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['set-cookie']
 }));
+
+app.options('*', cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+  
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
@@ -167,7 +179,7 @@ app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
     });
   } catch (err) {
     console.error('Signup error:', err);
-     res.status(500).json({ error: err.message || 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -289,6 +301,7 @@ app.get('/api/protected', authenticateToken, (req, res) => {
 // Start server
 initDatabase().then(() => {
   app.listen(port, () => {
-    console.log(`🚀 Server running at http://13.201.102.9:${port}`);
+    console.log(`🚀 Server running at http://43.204.100.237:${port}`);
   });
 });
+
