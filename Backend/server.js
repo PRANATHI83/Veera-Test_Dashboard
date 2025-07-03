@@ -13,7 +13,7 @@ const app = express();
 const port = process.env.PORT || 3016;
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
-// ✅ PostgreSQL config
+// PostgreSQL config
 const pool = new Pool({
   user: process.env.DB_USER || 'postgres',
   host: process.env.DB_HOST || 'postgres',
@@ -22,10 +22,17 @@ const pool = new Pool({
   port: parseInt(process.env.DB_PORT) || 5432,
 });
 
-// ✅ CORS setup to allow only your deployed frontend
+// ✅ CORS configuration
 const allowedOrigin = 'http://43.204.100.237:8033';
 app.use(cors({
-  origin: allowedOrigin,
+  origin: (origin, callback) => {
+    console.log(`🔍 Request origin: ${origin}`);
+    if (!origin || origin === allowedOrigin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -36,27 +43,27 @@ app.options('*', cors({
   credentials: true
 }));
 
-// ✅ Middleware
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Static file serving
+// Static files
 app.use('/Login', express.static(path.join(__dirname, '../Login')));
 app.use('/Sign_up', express.static(path.join(__dirname, '../Sign_up')));
 app.use('/Forgot', express.static(path.join(__dirname, '../Forgot')));
 app.use('/Dashboard', express.static(path.join(__dirname, '../Dashboard')));
 
-// ✅ File upload setup
+// Multer setup
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// ✅ Log incoming requests
+// Logger
 app.use((req, res, next) => {
   console.log(`[${req.method}] ${req.url} | Origin: ${req.headers.origin}`);
   next();
 });
 
-// ✅ Database init
+// Initialize DB
 const initDatabase = async () => {
   try {
     await pool.query(`
@@ -75,11 +82,11 @@ const initDatabase = async () => {
   }
 };
 
-// ✅ JWT auth middleware
+// JWT middleware
 const authenticateToken = (req, res, next) => {
   const token = req.cookies.token ||
-    req.headers['authorization']?.split(' ')[1] ||
-    req.query.token;
+                req.headers['authorization']?.split(' ')[1] ||
+                req.query.token;
 
   if (!token) return res.status(401).json({ error: 'Unauthorized - No token provided' });
 
@@ -93,11 +100,10 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// ✅ Email validator
 const validateEmail = email =>
   /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
 
-// ✅ Pages
+// Routes
 app.get('/', (req, res) =>
   res.sendFile(path.join(__dirname, '../Login/index.html'))
 );
@@ -111,7 +117,7 @@ app.get('/dashboard', authenticateToken, (req, res) =>
   res.sendFile(path.join(__dirname, '../Dashboard/dashboard.html'))
 );
 
-// ✅ Signup
+// Signup
 app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -163,7 +169,7 @@ app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
   }
 });
 
-// ✅ Login
+// Login
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password, rememberMe } = req.body;
@@ -204,7 +210,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// ✅ Forgot password
+// Forgot Password
 app.post('/api/forgot-password', async (req, res) => {
   try {
     const { email, newPassword, confirmPassword } = req.body;
@@ -236,7 +242,7 @@ app.post('/api/forgot-password', async (req, res) => {
   }
 });
 
-// ✅ Get user info
+// Get User Info
 app.get('/api/user', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
@@ -264,13 +270,13 @@ app.get('/api/user', authenticateToken, async (req, res) => {
   }
 });
 
-// ✅ Logout
+// Logout
 app.post('/api/logout', (req, res) => {
   res.clearCookie('token');
   res.json({ message: 'Logout successful' });
 });
 
-// ✅ Protected test
+// Protected Route
 app.get('/api/protected', authenticateToken, (req, res) => {
   res.json({
     message: 'Protected content accessed successfully',
@@ -278,7 +284,7 @@ app.get('/api/protected', authenticateToken, (req, res) => {
   });
 });
 
-// ✅ Start server
+// Start server
 initDatabase().then(() => {
   app.listen(port, () => {
     console.log(`🚀 Server running at http://43.204.100.237:${port}`);
