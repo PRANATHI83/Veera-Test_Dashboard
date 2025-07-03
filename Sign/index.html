@@ -1,545 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - HRMS</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        :root {
-            --primary-blue: #2563eb;
-            --dark-blue: #1a237e;
-            --black: #000000;
-            --white: #ffffff;
-            --gray-light: #d1d5db;
-            --gray-dark: #555;
-            --error-red: #dc2626;
-            --success-green: #16a34a;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .signup-header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: linear-gradient(135deg, var(--black), var(--dark-blue));
-            color: var(--white);
-            padding: 1rem;
-            box-shadow: var(--shadow-md);
-            z-index: 1000;
-            text-align: center;
-        }
-
-        .signup-header h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .signup-header p {
-            font-size: 0.875rem;
-            opacity: 0.9;
-        }
-
-        .signup-container {
-            display: flex;
-            flex: 1;
-            padding-top: 80px;
-        }
-
-        .background-half {
-            flex: 1;
-            background: url('https://source.unsplash.com/random/1600x900/?office,hr') center/cover no-repeat;
-            position: relative;
-        }
-
-        .background-half::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .form-half {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-        }
-
-        .signup-form {
-            background-color: var(--white);
-            padding: 2rem;
-            border-radius: 8px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: var(--shadow-md);
-        }
-
-        .signup-form h2 {
-            margin-bottom: 1.5rem;
-            color: var(--primary-blue);
-            text-align: center;
-            font-size: 1.8rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--gray-dark);
-        }
-
-        .form-group label i {
-            margin-right: 8px;
-            color: var(--primary-blue);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--gray-light);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        .password-container {
-            position: relative;
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: var(--gray-dark);
-        }
-
-        .error-message {
-            color: var(--error-red);
-            font-size: 0.8rem;
-            margin-top: 0.25rem;
-            display: none;
-        }
-
-        .success-message {
-            color: var(--success-green);
-            font-size: 0.9rem;
-            text-align: center;
-            margin: 1rem 0;
-            display: none;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 0.75rem;
-            background: linear-gradient(135deg, var(--black), var(--primary-blue));
-            color: var(--white);
-            font-size: 1rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .form-footer {
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-        }
-
-        .form-footer a {
-            color: var(--primary-blue);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .form-footer a:hover {
-            text-decoration: underline;
-        }
-
-        .password-strength {
-            height: 4px;
-            background: #eee;
-            margin: 0.5rem 0;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .strength-meter {
-            height: 100%;
-            width: 0;
-            transition: width 0.3s ease;
-        }
-
-        .password-requirements {
-            font-size: 0.8rem;
-            color: var(--gray-dark);
-            margin-bottom: 1rem;
-        }
-
-        .requirement {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.25rem;
-        }
-
-        .requirement i {
-            margin-right: 5px;
-            font-size: 0.6rem;
-        }
-
-        .valid {
-            color: var(--success-green);
-        }
-
-        .invalid {
-            color: var(--gray-dark);
-        }
-
-        @media (max-width: 768px) {
-            .signup-container {
-                flex-direction: column;
-                padding-top: 70px;
-            }
-            
-            .background-half {
-                min-height: 200px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Signup</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+  <style>
+    /* Styling remains unchanged for brevity */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      padding-top: 70px;
+    }
+    .background-half {
+      flex: 1;
+      background-image: url('https://th.bing.com/th/id/OIP.L_Iq2oSnC9ft5CuSFA0D_QHaHa?rs=1&pid=ImgDetMain');
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+    .signup-half {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .signup-container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .signup-container h2 {
+      margin-bottom: 1rem;
+      color: blue;
+      text-align: center;
+      font-size: 1.8rem;
+    }
+    .signup-container label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: #555;
+      display: flex;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+    .signup-container label i {
+      margin-right: 8px;
+      font-size: 1rem;
+    }
+    .signup-container input {
+      width: 96%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+      margin-bottom: 0.5rem;
+    }
+    .signup-container input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .signup-container button {
+      width: 100%;
+      padding: 0.75rem;
+      background: linear-gradient(to right, black, blue);
+      color: white;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-top: 1rem;
+    }
+    .signup-container button:hover {
+      background-color: #ff6f61;
+    }
+    .signup-container a {
+      display: block;
+      text-align: center;
+      margin-top: 1rem;
+      color: #0b0b0b;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .signup-container a:hover {
+      text-decoration: underline;
+    }
+    .error-message {
+      color: red;
+      font-size: 0.9rem;
+      text-align: left;
+      margin-top: -0.5rem;
+      margin-bottom: 0.5rem;
+    }
+  </style>
 </head>
 <body>
-    <header class="signup-header">
-        <h1>Create Your Account</h1>
-        <p>Join our HR management system today</p>
-    </header>
-
-    <div class="signup-container">
-        <div class="background-half"></div>
-        
-        <div class="form-half">
-            <form id="signup-form" class="signup-form" enctype="multipart/form-data">
-                <h2>Sign Up</h2>
-                
-                <div class="form-group">
-                    <label for="name"><i class="fas fa-user"></i> Full Name</label>
-                    <input type="text" id="name" name="name" class="form-control" placeholder="Enter your full name" required maxlength="50">
-                    <p class="error-message" id="name-error"></p>
-                </div>
-                
-                <div class="form-group">
-                    <label for="email"><i class="fas fa-envelope"></i> Email Address</label>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required maxlength="100">
-                    <p class="error-message" id="email-error"></p>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password"><i class="fas fa-lock"></i> Password</label>
-                    <div class="password-container">
-                        <input type="password" id="password" name="password" class="form-control" placeholder="Create a password" required minlength="8" maxlength="30">
-                        <i class="fas fa-eye toggle-password" id="toggle-password"></i>
-                    </div>
-                    <div class="password-strength">
-                        <div class="strength-meter" id="strength-meter"></div>
-                    </div>
-                    <div class="password-requirements">
-                        <div class="requirement" id="length-req"><i class="fas fa-circle"></i> At least 8 characters</div>
-                        <div class="requirement" id="upper-req"><i class="fas fa-circle"></i> At least 1 uppercase letter</div>
-                        <div class="requirement" id="lower-req"><i class="fas fa-circle"></i> At least 1 lowercase letter</div>
-                        <div class="requirement" id="number-req"><i class="fas fa-circle"></i> At least 1 number</div>
-                        <div class="requirement" id="special-req"><i class="fas fa-circle"></i> At least 1 special character</div>
-                    </div>
-                    <p class="error-message" id="password-error"></p>
-                </div>
-                
-                <div class="form-group">
-                    <label for="confirm-password"><i class="fas fa-lock"></i> Confirm Password</label>
-                    <div class="password-container">
-                        <input type="password" id="confirm-password" name="confirm-password" class="form-control" placeholder="Confirm your password" required>
-                        <i class="fas fa-eye toggle-password" id="toggle-confirm-password"></i>
-                    </div>
-                    <p class="error-message" id="confirm-password-error"></p>
-                </div>
-                
-                <div class="form-group">
-                    <label for="profile-picture"><i class="fas fa-image"></i> Profile Picture</label>
-                    <input type="file" id="profile-picture" name="profilePicture" class="form-control" accept="image/jpeg,image/png,image/jpg" required>
-                    <p class="error-message" id="profile-picture-error"></p>
-                </div>
-                
-                <button type="submit" class="btn">Create Account</button>
-                
-                <p class="success-message" id="success-message"></p>
-                
-                <div class="form-footer">
-                    Already have an account? <a href="/login">Sign In</a>
-                </div>
-            </form>
-        </div>
+  <header style="position: fixed; top: 0; width: 100%; background: linear-gradient(to right, #000000, #1a237e); color: white; padding: 1rem 2rem; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000;">
+    <div style="text-align: center;">
+      <h1 style="margin: 0; font-size: 1.5rem; font-weight: 600;">Signup-form</h1>
+      <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem;">"Secure user registration system"</p>
     </div>
+  </header>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('signup-form');
-            const passwordInput = document.getElementById('password');
-            const confirmPasswordInput = document.getElementById('confirm-password');
-            const togglePassword = document.getElementById('toggle-password');
-            const toggleConfirmPassword = document.getElementById('toggle-confirm-password');
-            const strengthMeter = document.getElementById('strength-meter');
-            
-            // Password requirements elements
-            const lengthReq = document.getElementById('length-req');
-            const upperReq = document.getElementById('upper-req');
-            const lowerReq = document.getElementById('lower-req');
-            const numberReq = document.getElementById('number-req');
-            const specialReq = document.getElementById('special-req');
-            
-            // Error message elements
-            const nameError = document.getElementById('name-error');
-            const emailError = document.getElementById('email-error');
-            const passwordError = document.getElementById('password-error');
-            const confirmPasswordError = document.getElementById('confirm-password-error');
-            const profilePictureError = document.getElementById('profile-picture-error');
-            const successMessage = document.getElementById('success-message');
-            
-            // Toggle password visibility
-            togglePassword.addEventListener('click', function() {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                this.classList.toggle('fa-eye');
-                this.classList.toggle('fa-eye-slash');
-            });
-            
-            toggleConfirmPassword.addEventListener('click', function() {
-                const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                confirmPasswordInput.setAttribute('type', type);
-                this.classList.toggle('fa-eye');
-                this.classList.toggle('fa-eye-slash');
-            });
-            
-            // Password strength checker
-            passwordInput.addEventListener('input', function() {
-                checkPasswordStrength(this.value);
-            });
-            
-            function checkPasswordStrength(password) {
-                let strength = 0;
-                let requirementsMet = 0;
-                const totalRequirements = 5;
-                
-                // Reset requirements
-                lengthReq.className = 'requirement';
-                upperReq.className = 'requirement';
-                lowerReq.className = 'requirement';
-                numberReq.className = 'requirement';
-                specialReq.className = 'requirement';
-                
-                // Check length
-                if (password.length >= 8) {
-                    strength += 20;
-                    requirementsMet++;
-                    lengthReq.className = 'requirement valid';
-                }
-                
-                // Check uppercase letters
-                if (/[A-Z]/.test(password)) {
-                    strength += 20;
-                    requirementsMet++;
-                    upperReq.className = 'requirement valid';
-                }
-                
-                // Check lowercase letters
-                if (/[a-z]/.test(password)) {
-                    strength += 20;
-                    requirementsMet++;
-                    lowerReq.className = 'requirement valid';
-                }
-                
-                // Check numbers
-                if (/[0-9]/.test(password)) {
-                    strength += 20;
-                    requirementsMet++;
-                    numberReq.className = 'requirement valid';
-                }
-                
-                // Check special characters
-                if (/[^A-Za-z0-9]/.test(password)) {
-                    strength += 20;
-                    requirementsMet++;
-                    specialReq.className = 'requirement valid';
-                }
-                
-                // Update strength meter
-                strengthMeter.style.width = strength + '%';
-                
-                // Color the strength meter
-                if (strength < 40) {
-                    strengthMeter.style.backgroundColor = '#ef233c'; // Red
-                } else if (strength < 80) {
-                    strengthMeter.style.backgroundColor = '#ffaa00'; // Orange
-                } else {
-                    strengthMeter.style.backgroundColor = '#38b000'; // Green
-                }
-                
-                return requirementsMet === totalRequirements;
-            }
-            
-            // Form submission
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                // Reset error messages
-                nameError.style.display = 'none';
-                emailError.style.display = 'none';
-                passwordError.style.display = 'none';
-                confirmPasswordError.style.display = 'none';
-                profilePictureError.style.display = 'none';
-                successMessage.style.display = 'none';
-                
-                // Validate form
-                const name = document.getElementById('name').value.trim();
-                const email = document.getElementById('email').value.trim();
-                const password = passwordInput.value;
-                const confirmPassword = confirmPasswordInput.value;
-                const profilePicture = document.getElementById('profile-picture').files[0];
-                
-                let isValid = true;
-                
-                // Validate name
-                if (name.length < 2) {
-                    nameError.textContent = 'Name must be at least 2 characters';
-                    nameError.style.display = 'block';
-                    isValid = false;
-                }
-                
-                // Validate email
-                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-                if (!emailRegex.test(email)) {
-                    emailError.textContent = 'Please enter a valid email address';
-                    emailError.style.display = 'block';
-                    isValid = false;
-                }
-                
-                // Validate password
-                if (!checkPasswordStrength(password)) {
-                    passwordError.textContent = 'Password does not meet all requirements';
-                    passwordError.style.display = 'block';
-                    isValid = false;
-                }
-                
-                // Validate password match
-                if (password !== confirmPassword) {
-                    confirmPasswordError.textContent = 'Passwords do not match';
-                    confirmPasswordError.style.display = 'block';
-                    isValid = false;
-                }
-                
-                // Validate profile picture
-                if (!profilePicture) {
-                    profilePictureError.textContent = 'Please upload a profile picture';
-                    profilePictureError.style.display = 'block';
-                    isValid = false;
-                } else if (!['image/jpeg', 'image/png', 'image/jpg'].includes(profilePicture.type)) {
-                    profilePictureError.textContent = 'Only JPG, JPEG, and PNG images are allowed';
-                    profilePictureError.style.display = 'block';
-                    isValid = false;
-                } else if (profilePicture.size > 2 * 1024 * 1024) { // 2MB limit
-                    profilePictureError.textContent = 'Image size must be less than 2MB';
-                    profilePictureError.style.display = 'block';
-                    isValid = false;
-                }
-                
-                if (!isValid) return;
-                
-                try {
-                    // Create FormData object
-                    const formData = new FormData();
-                    formData.append('name', name);
-                    formData.append('email', email);
-                    formData.append('password', password);
-                    formData.append('profilePicture', profilePicture);
-                    
-                    // Submit form
-                    const response = await fetch('/api/signup', {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'include'
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (!response.ok) {
-                        throw new Error(data.message || 'Signup failed');
-                    }
-                    
-                    // Show success message
-                    successMessage.textContent = 'Account created successfully! Redirecting...';
-                    successMessage.style.display = 'block';
-                    
-                    // Redirect to login after 2 seconds
-                    setTimeout(() => {
-                        window.location.href = '/login';
-                    }, 2000);
-                    
-                } catch (error) {
-                    if (error.message.includes('email')) {
-                        emailError.textContent = error.message;
-                        emailError.style.display = 'block';
-                    } else {
-                        alert(error.message || 'An error occurred during signup');
-                    }
-                    console.error('Signup error:', error);
-                }
-            });
+  <div class="background-half"></div>
+  <div class="signup-half">
+    <div class="signup-container">
+      <h2>Create an Account</h2>
+      <form id="signup-form" enctype="multipart/form-data">
+        <label for="name"><i class="fas fa-user"></i> User Name</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="email"><i class="fas fa-envelope"></i> Email</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="password"><i class="fas fa-lock"></i> Password</label>
+        <input type="password" id="password" name="password" required minlength="8">
+
+        <label for="profilePicture"><i class="fas fa-image"></i> Profile Picture</label>
+        <input type="file" id="profilePicture" name="profilePicture" accept="image/*" required>
+
+        <button type="submit">Sign Up</button>
+      </form>
+
+      <a href="../Login/index.html">Already have an account? Sign In</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('signup-form').addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const profilePicture = document.getElementById('profilePicture').files[0];
+
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('password', password);
+      formData.append('profilePicture', profilePicture);
+
+      const backendURL = window.location.hostname.includes("localhost")
+        ? "http://localhost:3016/api/signup"
+        : "http://43.204.100.237:3016/api/signup";
+
+      try {
+        const response = await fetch(backendURL, {
+          method: 'POST',
+          body: formData
         });
-    </script>
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          alert(result.error || 'Signup failed.');
+          return;
+        }
+
+        alert('Signup successful!');
+        window.location.href = "../Login/index.html";
+      } catch (err) {
+        console.error('Signup error:', err);
+        alert('Something went wrong.');
+      }
+    });
+  </script>
 </body>
 </html>
