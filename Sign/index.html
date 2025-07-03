@@ -256,7 +256,7 @@
 
         let isFingerPrintVerified = false;
 
-        // Function to display messages
+        // Function to display messages (used for general form feedback)
         function showMessage(message, type) {
             messageDisplay.textContent = message;
             messageDisplay.className = `message-box ${type}`; // Apply success or error class
@@ -292,15 +292,15 @@
         });
 
         fingerprintIcon.addEventListener('click', function () {
-            // Replaced alert with showMessage
-            showMessage("Fingerprint authentication initiated. Please place your finger on the sensor.", 'info'); 
+            // Reverted to alert for fingerprint initiation as requested
+            alert("Fingerprint authentication initiated. Please place your finger on the sensor."); 
 
             setTimeout(() => {
                 isFingerPrintVerified = true;
                 fingerprintIcon.classList.add('fingerprint-verified');
                 fingerprintError.textContent = '';
-                // Replaced alert with showMessage
-                showMessage("Fingerprint verified successfully!", 'success'); 
+                // Reverted to alert for fingerprint success as requested
+                alert("Fingerprint verified successfully!"); 
             }, 1000);
         });
 
