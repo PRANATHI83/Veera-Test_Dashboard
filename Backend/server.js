@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3016;
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:8033', // Change this to your frontend's domain if different
+  origin: 'http://43.204.100.237:8033', // Change this to your frontend's domain if different
   credentials: true
 }));
 app.use(express.json());
@@ -48,5 +48,5 @@ app.use((req, res) => {
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Server running at http://43.204.100.237:${PORT}`);
 });
