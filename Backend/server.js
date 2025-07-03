@@ -25,11 +25,10 @@ const pool = new Pool({
 // ✅ Allowed origins for CORS
 const allowedOrigins = [
   'http://127.0.0.1:5500',
-  'http://43.204.100.237:8033'
+  'http://43.204.100.237:8033' // ✅ This is your real frontend
 ];
-
 // ✅ CORS middleware
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
@@ -40,9 +39,10 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   exposedHeaders: ['set-cookie']
-}));
+};
 
-app.options('*', cors());
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // <- Use same options
 
 // ✅ Middleware
 app.use(express.json());
