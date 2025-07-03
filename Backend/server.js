@@ -25,7 +25,7 @@ const pool = new Pool({
 // ✅ Allowed origins for CORS
 const allowedOrigins = [
   'http://127.0.0.1:5500',
-  'http://43.204.100.237:8030'
+  'http://43.204.100.237:8033'
 ];
 
 // ✅ CORS middleware
