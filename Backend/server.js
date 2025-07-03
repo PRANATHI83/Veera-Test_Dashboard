@@ -13,7 +13,7 @@ const app = express();
 const port = process.env.PORT || 3016;
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
-// Database config
+// ✅ PostgreSQL config
 const pool = new Pool({
   user: process.env.DB_USER || 'postgres',
   host: process.env.DB_HOST || 'postgres',
@@ -22,48 +22,41 @@ const pool = new Pool({
   port: parseInt(process.env.DB_PORT) || 5432,
 });
 
-// ✅ Allowed origins for CORS
-const allowedOrigins = [
-  'http://127.0.0.1:5500',
-  'http://43.204.100.237:8033' // ✅ This is your real frontend
-];
-// ✅ CORS middleware
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
+// ✅ CORS setup to allow only your deployed frontend
+const allowedOrigin = 'http://43.204.100.237:8033';
+app.use(cors({
+  origin: allowedOrigin,
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['set-cookie']
-};
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // <- Use same options
+}));
+app.options('*', cors({
+  origin: allowedOrigin,
+  credentials: true
+}));
 
 // ✅ Middleware
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Safe static file serving
+// ✅ Static file serving
 app.use('/Login', express.static(path.join(__dirname, '../Login')));
 app.use('/Sign_up', express.static(path.join(__dirname, '../Sign_up')));
 app.use('/Forgot', express.static(path.join(__dirname, '../Forgot')));
 app.use('/Dashboard', express.static(path.join(__dirname, '../Dashboard')));
 
+// ✅ File upload setup
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// ✅ Logger
+// ✅ Log incoming requests
 app.use((req, res, next) => {
   console.log(`[${req.method}] ${req.url} | Origin: ${req.headers.origin}`);
   next();
 });
 
-// ✅ Initialize DB
+// ✅ Database init
 const initDatabase = async () => {
   try {
     await pool.query(`
@@ -82,11 +75,11 @@ const initDatabase = async () => {
   }
 };
 
-// ✅ Token validation
+// ✅ JWT auth middleware
 const authenticateToken = (req, res, next) => {
   const token = req.cookies.token ||
-                req.headers['authorization']?.split(' ')[1] ||
-                req.query.token;
+    req.headers['authorization']?.split(' ')[1] ||
+    req.query.token;
 
   if (!token) return res.status(401).json({ error: 'Unauthorized - No token provided' });
 
@@ -100,28 +93,25 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// ✅ Email validator
 const validateEmail = email =>
   /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
 
-// ✅ Routes
+// ✅ Pages
 app.get('/', (req, res) =>
   res.sendFile(path.join(__dirname, '../Login/index.html'))
 );
-
 app.get('/signup', (req, res) =>
   res.sendFile(path.join(__dirname, '../Sign_up/index.html'))
 );
-
 app.get('/forgot-password', (req, res) =>
   res.sendFile(path.join(__dirname, '../Forgot/index.html'))
 );
+app.get('/dashboard', authenticateToken, (req, res) =>
+  res.sendFile(path.join(__dirname, '../Dashboard/dashboard.html'))
+);
 
-app.get('/dashboard', authenticateToken, (req, res) => {
-  const filePath = path.join(__dirname, '../Dashboard/dashboard.html');
-  res.sendFile(filePath);
-});
-
-// ✅ Signup route
+// ✅ Signup
 app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -134,8 +124,8 @@ app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    const emailExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (emailExists.rows.length > 0) {
+    const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    if (existingUser.rows.length > 0) {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
@@ -149,9 +139,7 @@ app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
 
     const newUser = result.rows[0];
 
-    const token = jwt.sign({ userId: newUser.id, email: newUser.email }, JWT_SECRET, {
-      expiresIn: '1h'
-    });
+    const token = jwt.sign({ userId: newUser.id, email: newUser.email }, JWT_SECRET, { expiresIn: '1h' });
 
     res.cookie('token', token, {
       httpOnly: true,
@@ -166,9 +154,7 @@ app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
         id: newUser.id,
         name: newUser.name,
         email: newUser.email,
-        profilePicture: newUser.profile_picture
-          ? `data:image/jpeg;base64,${newUser.profile_picture}`
-          : null
+        profilePicture: newUser.profile_picture ? `data:image/jpeg;base64,${newUser.profile_picture}` : null
       }
     });
   } catch (err) {
@@ -177,7 +163,7 @@ app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
   }
 });
 
-// ✅ Login route
+// ✅ Login
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password, rememberMe } = req.body;
@@ -284,7 +270,7 @@ app.post('/api/logout', (req, res) => {
   res.json({ message: 'Logout successful' });
 });
 
-// ✅ Protected test route
+// ✅ Protected test
 app.get('/api/protected', authenticateToken, (req, res) => {
   res.json({
     message: 'Protected content accessed successfully',
