@@ -7,9 +7,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* Login Page Styles */
-        .login-container {
+        body { /* Added body selector for margin/font-family */
             margin: 0;
             font-family: Arial, sans-serif;
+        }
+        .login-container {
+            /* margin: 0; -- Moved to body */
+            /* font-family: Arial, sans-serif; -- Moved to body */
             display: flex;
             height: 100vh;
             padding-top: 70px;
@@ -161,111 +165,166 @@
             margin: 0.25rem 0 0 0;
             font-size: 0.9rem;
         }
+
+        /* Added for displaying messages */
+        .message-box {
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 
 
-  <body>
-      <div id="login-page" class="login-container">
-          <header class="login-header">
-              <div>
-                  <h1>Login System</h1>
-                  <p>"Secure authentication with email and password"</p>
-              </div>
-          </header>
-          <div class="background-half"></div>
-          <div class="signin-half">
-              <div class="signin-container">
-                  <h2>Sign In</h2>
-                  <form id="signin-form">
-                      <label for="email"><i class="fas fa-envelope"></i> Email</label>
-                      <input type="email" id="email" name="email" placeholder="Enter your email" required maxlength="100">
-                      <p class="error-message" id="email-error"></p>
+<body>
+    <div id="login-page" class="login-container">
+        <header class="login-header">
+            <div>
+                <h1>Login System</h1>
+                <p>"Secure authentication with email and password"</p>
+            </div>
+        </header>
+        <div class="background-half"></div>
+        <div class="signin-half">
+            <div class="signin-container">
+                <h2>Sign In</h2>
+                <!-- Added message display area -->
+                <div id="message-display" class="message-box" style="display: none;"></div>
 
-                      <label for="password"><i class="fas fa-lock"></i> Password</label>
-                      <input type="password" id="password" name="password" placeholder="Enter your password" required>
-                      <p class="error-message" id="password-error"></p>
+                <form id="signin-form">
+                    <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required maxlength="100">
+                    <p class="error-message" id="email-error"></p>
 
-                      <div class="options-container">
-                          <div class="remember-me">
-                              <input type="checkbox" id="remember" name="remember">
-                              <label for="remember">Remember Me</label>
-                          </div>
-                          <a href="../Forgot/index.html">Forgot Password?</a>
-                      </div>
+                    <label for="password"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    <p class="error-message" id="password-error"></p>
 
-                      <button type="submit">Sign In</button>
-                  </form>
+                    <div class="options-container">
+                        <div class="remember-me">
+                            <input type="checkbox" id="remember" name="remember">
+                            <label for="remember">Remember Me</label>
+                        </div>
+                        <!-- Changed href to an absolute URL for Forgot Password -->
+                        <a href="http://13.201.102.9:8030/forgot-password">Forgot Password?</a> 
+                    </div>
 
-                  <p style="text-align: center;">Don't have an account? <a href="../Sign/index.html">Sign Up</a></p>
-              </div>
-          </div>
-      </div>
+                    <button type="submit">Sign In</button>
+                </form>
 
-      <script>
-          document.addEventListener('DOMContentLoaded', function () {
-              const form = document.getElementById('signin-form');
-              const emailInput = document.getElementById('email');
-              const passwordInput = document.getElementById('password');
-              const rememberMeInput = document.getElementById('remember');
-              const emailError = document.getElementById('email-error');
-              const passwordError = document.getElementById('password-error');
+                <p style="text-align: center;">Don't have an account? 
+                    <!-- Changed href to an absolute URL for Sign Up -->
+                    <a href="http://13.201.102.9:8033/signup">Sign Up</a>
+                </p>
+            </div>
+        </div>
+    </div>
 
-              emailInput.addEventListener('input', function () {
-                  emailError.textContent = validateEmail();
-              });
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('signin-form');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const rememberMeInput = document.getElementById('remember');
+            const emailError = document.getElementById('email-error');
+            const passwordError = document.getElementById('password-error');
+            const messageDisplay = document.getElementById('message-display'); // Get message display element
 
-              passwordInput.addEventListener('input', function () {
-                  passwordError.textContent = validatePassword();
-              });
+            // Function to display messages
+            function showMessage(message, type) {
+                messageDisplay.textContent = message;
+                messageDisplay.className = `message-box ${type}`; // Apply success or error class
+                messageDisplay.style.display = 'block'; // Make it visible
+            }
 
-              form.addEventListener('submit', async function (event) {
-                  event.preventDefault();
+            // Function to clear messages
+            function clearMessages() {
+                messageDisplay.textContent = '';
+                messageDisplay.style.display = 'none'; // Hide it
+                messageDisplay.className = 'message-box'; // Reset classes
+            }
 
-                  try {
-                      const response = await fetch('http://13.201.102.9:3016/api/login', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          credentials: 'include',
-                          body: JSON.stringify({
-                              email: emailInput.value.trim(),
-                              password: passwordInput.value,
-                              rememberMe: rememberMeInput.checked
-                          })
-                      });
+            emailInput.addEventListener('input', function () {
+                emailError.textContent = validateEmail();
+            });
 
-                      const result = await response.json();
+            passwordInput.addEventListener('input', function () {
+                passwordError.textContent = validatePassword();
+            });
 
-                      if (!response.ok) {
-                          throw new Error(result.error || 'Login failed');
-                      }                      
+            form.addEventListener('submit', async function (event) {
+                event.preventDefault();
+                clearMessages(); // Clear previous messages on new submission
 
-                      console.log('Login successful, redirecting to dashboard');
-                      window.location.href = 'http://13.201.102.9:3016/dashboard'; 
-                  } catch (error) {
-                      console.error('Login error:', error);
-                      alert(error.message);
-                  }
-              });
+                // Basic client-side validation before sending request
+                if (validateEmail() || validatePassword()) {
+                    showMessage('Please correct the form errors.', 'error');
+                    return;
+                }
 
-              function validateEmail() {
-                  const email = emailInput.value.trim();
-                  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-                  if (!emailPattern.test(email)) {
-                      return 'Please enter a valid email address.';
-                  }
-                  return '';
-              }
+                try {
+                    const response = await fetch('http://13.201.102.9:3016/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            email: emailInput.value.trim(),
+                            password: passwordInput.value,
+                            rememberMe: rememberMeInput.checked
+                        })
+                    });
 
-              function validatePassword() {
-                  const password = passwordInput.value;
-                  if (password.length < 8) {
-                      return 'Password must be at least 8 characters long.';
-                  }
-                  return '';
-              }
-          });
-      </script>
-  </body>
+                    const result = await response.json();
 
+                    if (!response.ok) {
+                        // Display error message from server
+                        showMessage(result.error || 'Login failed. Please try again.', 'error');
+                        throw new Error(result.error || 'Login failed'); // Still throw for console logging
+                    }                      
+
+                    showMessage('Login successful! Redirecting to dashboard...', 'success'); // Show success message
+                    console.log('Login successful, redirecting to dashboard');
+                    // Give user a moment to see success message before redirecting
+                    setTimeout(() => {
+                        window.location.href = 'http://13.201.102.9:3016/dashboard'; 
+                    }, 1500); // Redirect after 1.5 seconds
+                } catch (error) {
+                    console.error('Login error:', error);
+                    // Message already shown by showMessage function
+                }
+            });
+
+            function validateEmail() {
+                const email = emailInput.value.trim();
+                const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!emailPattern.test(email)) {
+                    return 'Please enter a valid email address.';
+                }
+                return '';
+            }
+
+            function validatePassword() {
+                const password = passwordInput.value;
+                if (password.length < 8) {
+                    return 'Password must be at least 8 characters long.';
+                }
+                return '';
+            }
+        });
+    </script>
+</body>
 </html>
