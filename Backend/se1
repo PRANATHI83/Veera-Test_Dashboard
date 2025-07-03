@@ -51,14 +51,8 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // <-- Important for form submissions
 app.use(cookieParser());
-
-// Serve static files from specific folders
-app.use('/login', express.static(path.join(__dirname, '../Login')));
-app.use('/signup', express.static(path.join(__dirname, '../Sign_up')));
-app.use('/forgot-password', express.static(path.join(__dirname, '../Forgot')));
-app.use('/dashboard', express.static(path.join(__dirname, '../Dashboard')));
+app.use(express.static(path.join(__dirname, '../')));
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -105,24 +99,23 @@ const validateEmail = (email) => {
   return re.test(email);
 };
 
-// Route redirects
 app.get('/', (req, res) => {
-  res.redirect('/login/index.html');
+  res.sendFile(path.join(__dirname, '../Login/index.html'));
 });
 
 app.get('/signup', (req, res) => {
-  res.redirect('/signup/index.html');
+  res.sendFile(path.join(__dirname, '../Sign_up/index.html'));
 });
 
 app.get('/forgot-password', (req, res) => {
-  res.redirect('/forgot-password/index.html');
+  res.sendFile(path.join(__dirname, '../Forgot/index.html'));
 });
 
 app.get('/dashboard', authenticateToken, (req, res) => {
-  res.redirect('/dashboard/dashboard.html');
+  const filePath = path.join(__dirname, '../Dashboard/dashboard.html');
+  res.sendFile(filePath);
 });
 
-// API routes
 app.post('/api/signup', upload.single('profilePicture'), async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -292,11 +285,6 @@ app.get('/api/protected', authenticateToken, (req, res) => {
     message: 'Protected content accessed successfully',
     user: req.user
   });
-});
-
-// Catch-all 404 route
-app.use((req, res) => {
-  res.status(404).send('404 - Not Found');
 });
 
 initDatabase().then(() => {
